@@ -1,0 +1,555 @@
+<html><head><base href="https://ifood-delivery-analysis.com/"><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Análise de Entregadores iFood</title><style>
+    body {
+        font-family: 'Roboto', sans-serif;
+        background-color: #f4f4f4;
+        margin: 0;
+        padding: 0;
+        color: #333;
+    }
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+    header {
+        background-color: #ea1d2c;
+        color: #fff;
+        padding: 20px 0;
+        text-align: center;
+    }
+    h1 {
+        margin: 0;
+        font-size: 2.5em;
+    }
+    .city-selector {
+        text-align: center;
+        margin: 20px 0;
+    }
+    #city-select {
+        padding: 10px;
+        font-size: 1em;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+    }
+    #toggle-view-btn {
+        margin-left: 10px;
+        padding: 10px 20px;
+        background-color: #4a4a4a;
+        color: #fff;
+        border: none;
+        border-radius: 5px;
+        font-size: 1em;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+    #toggle-view-btn:hover {
+        background-color: #5a5a5a;
+    }
+    .data-container {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 20px;
+    }
+    .data-box {
+        background-color: #fff;
+        border-radius: 8px;
+        padding: 20px;
+        width: calc(50% - 10px);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    h2 {
+        color: #ea1d2c;
+        border-bottom: 2px solid #ea1d2c;
+        padding-bottom: 10px;
+    }
+    #refresh-btn {
+        display: block;
+        margin: 20px auto;
+        padding: 10px 20px;
+        background-color: #ea1d2c;
+        color: #fff;
+        border: none;
+        border-radius: 5px;
+        font-size: 1em;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+    #refresh-btn:hover {
+        background-color: #c41822;
+    }
+    #worst-establishments-btn {
+        display: inline-block;
+        margin-left: 10px;
+        padding: 10px 20px;
+        background-color: #4a4a4a;
+        color: #fff;
+        border: none;
+        border-radius: 5px;
+        font-size: 1em;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+    #worst-establishments-btn:hover {
+        background-color: #5a5a5a;
+    }
+    .loading {
+        text-align: center;
+        margin-top: 20px;
+        font-style: italic;
+        color: #666;
+    }
+    .icon {
+        width: 24px;
+        height: 24px;
+        margin-right: 10px;
+        vertical-align: middle;
+    }
+    .total {
+        font-weight: bold;
+        margin-top: 10px;
+        border-top: 1px solid #ccc;
+        padding-top: 10px;
+    }
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+    }
+    th, td {
+        border: 1px solid #ddd;
+        padding: 8px;
+        text-align: left;
+    }
+    th {
+        background-color: #f2f2f2;
+    }
+    .best-regions, .best-times {
+        margin-top: 20px;
+    }
+    .best-regions h3, .best-times h3 {
+        color: #ea1d2c;
+    }
+    .region-available {
+        margin-bottom: 5px;
+    }
+    .timer {
+        font-size: 0.8em;
+        color: #666;
+        margin-left: 10px;
+    }
+    .dark-mode {
+        background-color: #333;
+        color: #fff;
+    }
+    .dark-mode h2 {
+        color: #ff6b6b;
+        border-bottom: 2px solid #ff6b6b;
+    }
+    #worst-establishments-card {
+        margin-top: 20px;
+        display: none;
+    }
+    #worst-establishments-list {
+        padding-left: 20px;
+    }
+    #worst-establishments-list li {
+        margin-bottom: 5px;
+    }
+    @media (max-width: 768px) {
+        .data-container {
+            flex-direction: column;
+        }
+        .data-box {
+            width: 100%;
+            margin-bottom: 20px;
+        }
+    }
+</style></head><body>
+    <header>
+        <h1>Análise de Entregadores iFood <span style="font-size: 0.5em; vertical-align: super;">Leon Vies DEV</span></h1>
+    </header>
+    <div class="container">
+        <div class="city-selector">
+            <select id="city-select">
+                <option value="brasilia">Brasília</option>
+                <option value="anapolis">Anápolis</option>
+                <option value="goiania">Goiânia</option>
+                <option value="saopaulo">São Paulo</option>
+            </select>
+            <button id="toggle-view-btn">Visualizar em Modo Mobile</button>
+        </div>
+        <div class="data-container">
+            <div class="data-box">
+                <h2>
+                    <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 22s-8-4.5-8-11.8A8 8 0 0 1 12 2a8 8 0 0 1 8 8.2c0 7.3-8 11.8-8 11.8z"/>
+                        <circle cx="12" cy="10" r="3"/>
+                    </svg>
+                    Entregadores iFood <span id="update-timer" class="timer"></span>
+                </h2>
+                <div id="region-availability">
+                    <!-- Disponíveis por região serão preenchidos aqui -->
+                </div>
+                <p>Em atendimento: <span id="busy-ifood">Carregando...</span></p>
+                <p class="total">Total de entregadores: <span id="total-ifood">Carregando...</span></p>
+                
+                <h3>Análise de Ganhos e Tempo</h3>
+                <table id="earnings-table">
+                    <thead>
+                        <tr>
+                            <th>Entregas</th>
+                            <th>Ganhos Médios</th>
+                            <th>Tempo Estimado</th>
+                            <th>Lucro Diário</th>
+                            <th>Estimativa Semanal</th>
+                            <th>Estimativa Mensal</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Dados serão preenchidos via JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+            <div class="data-box">
+                <h2>Análise de Regiões e Horários</h2>
+                <div class="best-regions">
+                    <h3>Melhores Regiões para Entrega</h3>
+                    <ol id="best-regions-list">
+                        <!-- Dados serão preenchidos via JavaScript -->
+                    </ol>
+                </div>
+                <div class="best-times">
+                    <h3>Melhores Horários para Entrega</h3>
+                    <ol id="best-times-list">
+                        <!-- Dados serão preenchidos via JavaScript -->
+                    </ol>
+                </div>
+                <div class="restaurant-wait-times">
+                    <h3>Tempo de Espera Médio para Preparo de Pedido</h3>
+                    <ul id="wait-times-list">
+                        <!-- Dados serão preenchidos via JavaScript -->
+                    </ul>
+                </div>
+                <div class="fuel-costs">
+                    <h3>Estimativa de Gastos com Combustível e Quilometragem</h3>
+                    <table id="fuel-costs-table">
+                        <thead>
+                            <tr>
+                                <th>Entregas</th>
+                                <th>Km Estimados</th>
+                                <th>Gasto Diário (125cc)</th>
+                                <th>Gasto Diário (150cc)</th>
+                                <th>Gasto Semanal (125cc)</th>
+                                <th>Gasto Semanal (150cc)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Dados serão preenchidos via JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <button id="refresh-btn">Atualizar Dados</button>
+        <button id="worst-establishments-btn">Piores Estabelecimentos</button>
+        <p class="loading" id="loading-message" style="display: none;">Atualizando dados...</p>
+        <div id="worst-establishments-card" class="data-box dark-mode" style="display: none;">
+            <h2>20 Piores Estabelecimentos para Pedidos</h2>
+            <ul id="worst-establishments-list"></ul>
+        </div>
+    </div>
+
+    <script>
+        const citySelect = document.getElementById('city-select');
+        let updateInterval = 60; // Update interval in seconds
+        let timerInterval;
+
+        function startUpdateTimer() {
+            clearInterval(timerInterval);
+            let timeLeft = updateInterval;
+            updateTimerDisplay(timeLeft);
+            
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                if (timeLeft >= 0) {
+                    updateTimerDisplay(timeLeft);
+                } else {
+                    clearInterval(timerInterval);
+                    fetchData();
+                }
+            }, 1000);
+        }
+
+        function updateTimerDisplay(seconds) {
+            const timerElement = document.getElementById('update-timer');
+            const minutes = Math.floor(seconds / 60);
+            const remainingSeconds = seconds % 60;
+            timerElement.textContent = `(Próxima atualização em ${minutes}:${remainingSeconds.toString().padStart(2, '0')})`;
+        }
+
+        async function fetchData() {
+            try {
+                document.getElementById('loading-message').style.display = 'block';
+                const selectedCity = citySelect.value;
+                const iFoodData = await simulateiFoodAPICall(selectedCity);
+                updateiFoodData(iFoodData, selectedCity);
+                updateEarningsAnalysis(selectedCity);
+                updateRegionsAndTimes(selectedCity);
+                updateRestaurantWaitTimes();
+                updateFuelCostsAndMileage(selectedCity);
+                document.getElementById('loading-message').style.display = 'none';
+                startUpdateTimer(); 
+            } catch (error) {
+                console.error('Erro ao buscar dados:', error);
+                document.getElementById('loading-message').style.display = 'none';
+            }
+        }
+
+        function updateiFoodData(data, city) {
+            const regionAvailabilityDiv = document.getElementById('region-availability');
+            regionAvailabilityDiv.innerHTML = '';
+
+            let totalAvailable = 0;
+            const bestRegions = getBestRegions(city);
+            
+            bestRegions.forEach((region, index) => {
+                const availableInRegion = Math.floor(data.availableDrivers / bestRegions.length) + (index === 0 ? data.availableDrivers % bestRegions.length : 0);
+                totalAvailable += availableInRegion;
+                const regionP = document.createElement('p');
+                regionP.className = 'region-available';
+                regionP.textContent = `Disponíveis em ${region}: ${availableInRegion}`;
+                regionAvailabilityDiv.appendChild(regionP);
+            });
+
+            document.getElementById('busy-ifood').textContent = data.busyDrivers;
+            document.getElementById('total-ifood').textContent = totalAvailable + data.busyDrivers;
+        }
+
+        function updateEarningsAnalysis(city) {
+            const earningsTable = document.getElementById('earnings-table').getElementsByTagName('tbody')[0];
+            earningsTable.innerHTML = '';
+            const deliveryCounts = [10, 15, 20, 25, 30];
+            const baseEarningPerDelivery = getBaseEarningPerDelivery(city);
+            const baseTimePerDelivery = getBaseTimePerDelivery(city);
+            const gasPrice = getGasPriceForRegion(city);
+            const kmPerDelivery = getKmPerDelivery(city);
+
+            deliveryCounts.forEach(count => {
+                const earnings = (baseEarningPerDelivery * count * (1 + Math.random() * 0.2)).toFixed(2);
+                const time = (baseTimePerDelivery * count * (1 + Math.random() * 0.3)).toFixed(1);
+                const fuelCost = calculateFuelCost(kmPerDelivery * count, 0.025, gasPrice).toFixed(2);
+                const profit = (earnings - fuelCost).toFixed(2);
+                
+                const weeklyEarnings = (earnings * 7).toFixed(2);
+                const weeklyFuelCost = (fuelCost * 7).toFixed(2);
+                const weeklyProfit = (profit * 7).toFixed(2);
+                
+                const monthlyEarnings = (earnings * 30).toFixed(2);
+                const monthlyFuelCost = (fuelCost * 30).toFixed(2);
+                const monthlyProfit = (profit * 30).toFixed(2);
+
+                const row = earningsTable.insertRow();
+                row.insertCell(0).textContent = count;
+                row.insertCell(1).textContent = `R$ ${earnings}`;
+                row.insertCell(2).textContent = `${time} horas`;
+                row.insertCell(3).textContent = `R$ ${profit} (Lucro após combustível)`;
+                row.insertCell(4).textContent = `Semanal: R$ ${weeklyProfit} (Ganhos: R$ ${weeklyEarnings}, Combustível: R$ ${weeklyFuelCost})`;
+                row.insertCell(5).textContent = `Mensal: R$ ${monthlyProfit} (Ganhos: R$ ${monthlyEarnings}, Combustível: R$ ${monthlyFuelCost})`;
+            });
+        }
+
+        function updateRegionsAndTimes(city) {
+            const bestRegions = getBestRegions(city);
+            const bestTimes = getBestTimes();
+
+            const bestRegionsList = document.getElementById('best-regions-list');
+            const bestTimesList = document.getElementById('best-times-list');
+
+            bestRegionsList.innerHTML = '';
+            bestTimesList.innerHTML = '';
+
+            bestRegions.forEach(region => {
+                const li = document.createElement('li');
+                li.textContent = region;
+                bestRegionsList.appendChild(li);
+            });
+
+            bestTimes.forEach(time => {
+                const li = document.createElement('li');
+                li.textContent = time;
+                bestTimesList.appendChild(li);
+            });
+        }
+
+        function updateRestaurantWaitTimes() {
+            const waitTimesList = document.getElementById('wait-times-list');
+            waitTimesList.innerHTML = '';
+
+            const restaurants = ['Carrefour', 'McDonald\'s', 'Burger King'];
+            restaurants.forEach(restaurant => {
+                const waitTime = Math.floor(Math.random() * 20) + 5;
+                const isWorthIt = waitTime <= 15 ? 'Compensa' : 'Não compensa';
+                const li = document.createElement('li');
+                li.innerHTML = `<strong>${restaurant}:</strong> ${waitTime} minutos - <span style="color: ${isWorthIt === 'Compensa' ? 'green' : 'red'}">${isWorthIt}</span>`;
+                waitTimesList.appendChild(li);
+            });
+        }
+
+        function updateFuelCostsAndMileage(city) {
+            const fuelCostsTable = document.getElementById('fuel-costs-table').getElementsByTagName('tbody')[0];
+            fuelCostsTable.innerHTML = '';
+            const deliveryCounts = [10, 15, 20, 25, 30];
+            const kmPerDelivery = getKmPerDelivery(city);
+            const gasPrice = getGasPriceForRegion(city);
+
+            deliveryCounts.forEach(count => {
+                const totalKm = kmPerDelivery * count;
+                const dailyCost125cc = calculateFuelCost(totalKm, 0.025, gasPrice); // 25km/L for 125cc
+                const dailyCost150cc = calculateFuelCost(totalKm, 0.022, gasPrice); // 22km/L for 150cc
+                const weeklyCost125cc = dailyCost125cc * 7;
+                const weeklyCost150cc = dailyCost150cc * 7;
+
+                const row = fuelCostsTable.insertRow();
+                row.insertCell(0).textContent = count;
+                row.insertCell(1).textContent = `${totalKm.toFixed(1)} km`;
+                row.insertCell(2).textContent = `R$ ${dailyCost125cc.toFixed(2)}`;
+                row.insertCell(3).textContent = `R$ ${dailyCost150cc.toFixed(2)}`;
+                row.insertCell(4).textContent = `R$ ${weeklyCost125cc.toFixed(2)}`;
+                row.insertCell(5).textContent = `R$ ${weeklyCost150cc.toFixed(2)}`;
+            });
+        }
+
+        function getKmPerDelivery(city) {
+            const kmPerDelivery = {
+                'saopaulo': 5,
+                'brasilia': 7,
+                'goiania': 6,
+                'anapolis': 5
+            };
+            return kmPerDelivery[city] || 5;
+        }
+
+        function getGasPriceForRegion(city) {
+            const gasPrices = {
+                'saopaulo': 5.20,
+                'brasilia': 5.10,
+                'goiania': 5.00,
+                'anapolis': 4.90
+            };
+            return gasPrices[city] || 5.00;
+        }
+
+        function calculateFuelCost(km, consumptionRate, gasPrice) {
+            return (km * consumptionRate * gasPrice);
+        }
+
+        document.getElementById('worst-establishments-btn').addEventListener('click', showWorstEstablishments);
+
+        function showWorstEstablishments() {
+            const worstEstablishmentsCard = document.getElementById('worst-establishments-card');
+            const worstEstablishmentsList = document.getElementById('worst-establishments-list');
+            
+            if (worstEstablishmentsCard.style.display === 'none') {
+                worstEstablishmentsCard.style.display = 'block';
+                worstEstablishmentsList.innerHTML = '';
+                
+                const establishments = generateWorstEstablishments();
+                establishments.forEach((establishment, index) => {
+                    const li = document.createElement('li');
+                    li.textContent = `${index + 1}. ${establishment.name} - Tempo médio de espera: ${establishment.waitTime} minutos`;
+                    worstEstablishmentsList.appendChild(li);
+                });
+            } else {
+                worstEstablishmentsCard.style.display = 'none';
+            }
+        }
+
+        function generateWorstEstablishments() {
+            const establishments = [
+                "McDonald's", "Burger King", "Subway", "Pizza Hut", "Domino's Pizza",
+                "KFC", "Taco Bell", "Wendy's", "Popeyes", "Chipotle",
+                "Starbucks", "Dunkin' Donuts", "Panera Bread", "Chick-fil-A", "Arby's",
+                "Outback Steakhouse", "Applebee's", "TGI Fridays", "Ruby Tuesday", "Olive Garden",
+                "Red Lobster", "Buffalo Wild Wings", "Denny's", "IHOP", "Waffle House"
+            ];
+            
+            return establishments
+                .map(name => ({
+                    name,
+                    waitTime: Math.floor(Math.random() * 20) + 16 // 16 to 35 minutes
+                }))
+                .sort((a, b) => b.waitTime - a.waitTime)
+                .slice(0, 20);
+        }
+
+        function simulateiFoodAPICall(city) {
+            return new Promise((resolve) => {
+                setTimeout(() => {
+                    const multiplier = city === 'saopaulo' ? 3 : city === 'brasilia' ? 2 : city === 'goiania' ? 1.5 : 1;
+                    resolve({
+                        availableDrivers: Math.floor((Math.random() * 30 + 10) * multiplier),
+                        busyDrivers: Math.floor((Math.random() * 20 + 5) * multiplier),
+                    });
+                }, 1000);
+            });
+        }
+
+        function getBaseEarningPerDelivery(city) {
+            const baseEarnings = {
+                'saopaulo': 12,
+                'brasilia': 10,
+                'goiania': 9,
+                'anapolis': 8
+            };
+            return baseEarnings[city] || 8;
+        }
+
+        function getBaseTimePerDelivery(city) {
+            const baseTimes = {
+                'saopaulo': 0.6,
+                'brasilia': 0.5,
+                'goiania': 0.45,
+                'anapolis': 0.4
+            };
+            return baseTimes[city] || 0.4;
+        }
+
+        function getBestRegions(city) {
+            const regions = {
+                'saopaulo': ['Vila Madalena', 'Itaim Bibi', 'Jardins'],
+                'brasilia': ['Asa Sul', 'Lago Sul', 'Águas Claras'],
+                'goiania': ['Setor Bueno', 'Setor Marista', 'Jardim Goiás'],
+                'anapolis': ['Jundiaí', 'Centro', 'Bairro de Lourdes']
+            };
+            return regions[city] || ['Centro', 'Bairro Principal', 'Zona Comercial'];
+        }
+
+        function getBestTimes() {
+            return ['11:30 - 14:00', '19:00 - 22:00', '15:00 - 17:00'];
+        }
+
+        document.getElementById('refresh-btn').addEventListener('click', () => {
+            clearInterval(timerInterval);
+            fetchData();
+        });
+
+        citySelect.addEventListener('change', () => {
+            clearInterval(timerInterval);
+            fetchData();
+        });
+
+        const toggleViewBtn = document.getElementById('toggle-view-btn');
+        const container = document.querySelector('.container');
+
+        toggleViewBtn.addEventListener('click', () => {
+            container.classList.toggle('mobile-view');
+            if (container.classList.contains('mobile-view')) {
+                toggleViewBtn.textContent = 'Visualizar em Modo Desktop';
+            } else {
+                toggleViewBtn.textContent = 'Visualizar em Modo Mobile';
+            }
+        });
+
+        fetchData();
+    </script>
+</body></html>
